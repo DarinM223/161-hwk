@@ -1,6 +1,7 @@
 ;;
 ;; CS 161 Homework 1
 ;; Name: Darin Minamoto
+;; UID: 704140102
 ;;
 
 ;; Checks if a tree contains the specific number
@@ -48,4 +49,10 @@
     ((equal len 0) nil)
     ((not (equal start 0)) (sub-list (cdr l) (- start 1) len))
     (t (cons (car l) (sub-list (cdr l) start (- len 1))))))
+
+(defun split-list (l)
+  (let ((mid (cond
+               ((oddp (length l)) (/ (- (length l) 1) 2))
+               (t (/ (length l) 2)))))
+    (list (sub-list l 0 mid) (sub-list l mid (- (length l) mid)))))
 

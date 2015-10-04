@@ -18,6 +18,10 @@
               ((sub-list '(a b c d) 0 3) (a b c) "Testing sub-list")
               ((sub-list '(a b c d) 3 1) (d) "Testing sub-list with length of 1")
               ((sub-list '(a b c d) 2 0) nil "Testing sub-list with length of 0")
+              ;; SPLIT-LIST tests
+              ((split-list '(a b c d)) ((a b) (c d)) "Testing split list with even length")
+              ((split-list '(a b c d e)) ((a b) (c d e)) "Testing split list with odd length")
+              ((split-list '(a b c d e f)) ((a b c) (d e f)) "Testing split list with larger length")
               ))
 
 (run-tests tests)
