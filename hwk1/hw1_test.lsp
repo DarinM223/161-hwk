@@ -13,7 +13,12 @@
               ((tree-max '((1 2 3) 7 8)) 8 "Testing if the max element in tree is returned")
               ;; TREE-ORDER tests
               ((tree-order 3) (3) "Testing tree order with one element")
-              ((tree-order '((1 2 3) 7 8)) (1 2 3 7 8) "Testing tree order with many elements")))
+              ((tree-order '((1 2 3) 7 8)) (1 2 3 7 8) "Testing tree order with many elements")
+              ;; SUB-LIST tests
+              ((sub-list '(a b c d) 0 3) (a b c) "Testing sub-list")
+              ((sub-list '(a b c d) 3 1) (d) "Testing sub-list with length of 1")
+              ((sub-list '(a b c d) 2 0) nil "Testing sub-list with length of 0")
+              ))
 
 (run-tests tests)
 
