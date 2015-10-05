@@ -1,4 +1,10 @@
 
+;;
+;; This file contains the function to run the test cases for each homework.
+;; Do not run this file directly, instead call (run-tests tests) inside
+;; a test file for each homework and run that test file instead.
+;;
+
 ;; Runs all tests
 (defun run-tests (tests)
   (let ((test (car tests))
