@@ -67,3 +67,25 @@
                       (+ left-height 1)
                       (+ right-height 1))))))
 
+;; Returns a binary tree from a list
+(defun list2btree (leaves)
+  (cond
+    ((= (length leaves) 1) (car leaves))
+    ((= (length leaves) 2) leaves)
+    (t (let ((newlist (split-list leaves)))
+         (let ((left (first newlist))
+               (right (second newlist)))
+           (list (cond 
+                   ((listp left) (list2btree left))
+                   (t left))
+                 (cond
+                   ((listp right) (list2btree right))
+                   (t right))))))))
+
+;; Returns a list from a binary tree
+(defun btree2list (tree)
+  (cond
+    ((numberp tree) (list tree))
+    ((listp tree) (append (btree2list (first tree))
+                          (btree2list (second tree))))))
+
