@@ -22,6 +22,13 @@
               ((split-list '(a b c d)) ((a b) (c d)) "Testing split list with even length")
               ((split-list '(a b c d e)) ((a b) (c d e)) "Testing split list with odd length")
               ((split-list '(a b c d e f)) ((a b c) (d e f)) "Testing split list with larger length")
+              ;; BTREE-HEIGHT tests
+              ((btree-height 1) 0 "Testing the height of a binary tree represented by one number")
+              ((btree-height '(1 2)) 1 "Testing the height of a binary tree represented by one list")
+              ((btree-height '(1 (2 3))) 2 "Testing the height of a two level binary tree")
+              ((btree-height '((1 2) (3 4))) 2 "Testing another two level binary tree")
+              ((btree-height '((1 (2 3)) ((4 5) (6 7)))) 3 "Testing the height of a three level binary tree")
+              ((btree-height '(((1 2) (3 4)) ((5 6) (7 8)))) 3 "Testing another three level binary tree")
               ))
 
 (run-tests tests)

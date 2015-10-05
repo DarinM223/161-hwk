@@ -50,9 +50,20 @@
     ((not (equal start 0)) (sub-list (cdr l) (- start 1) len))
     (t (cons (car l) (sub-list (cdr l) start (- len 1))))))
 
+;; Returns a list with split lists
 (defun split-list (l)
   (let ((mid (cond
                ((oddp (length l)) (/ (- (length l) 1) 2))
                (t (/ (length l) 2)))))
     (list (sub-list l 0 mid) (sub-list l mid (- (length l) mid)))))
+
+;; Returns the height of a binary tree
+(defun btree-height (tree)
+  (cond
+    ((numberp tree) 0)
+    ((listp tree) (let ((left-height (btree-height (first tree)))
+                        (right-height (btree-height (second tree))))
+                    (if (> left-height right-height)
+                      (+ left-height 1)
+                      (+ right-height 1))))))
 
