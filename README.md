@@ -9,7 +9,7 @@ and run the homework test file.
 
 For example, for homework 1, 
 
-    cd hwk1
+    cd hw1
     clisp hw1_test.lsp
 
 
