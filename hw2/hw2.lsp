@@ -1,3 +1,43 @@
+;; CS161 Homework 2
+;; Name: Darin Minamoto
+;; UID: 704140102
+
+;; Overall comment: Used lots of recursion and lisp stuff to implement these functions
+
+;; Returns a list of nodes in tree in the order they will be visited by a depth-first search of the tree
+;; tree: a tree as a list to run depth-first search on
+(defun dfs (tree)
+  (cond
+    ((null tree) nil)
+    ((atom tree) (list tree))
+    (t (append (dfs (first tree)) (dfs (rest tree))))))
+
+;; helper function for depth-first iterative-deepening search implementation
+;; for the implementation of a depth-limited search
+;; tree: tree as a list
+;; maxdepth: max depth to limit by
+(defun dls (tree maxdepth)
+  (cond ((null tree) nil)
+        ((< maxdepth 0) nil)
+        ((atom tree) (list tree))
+        (t (append (dls (car tree) (- maxdepth 1)) (dls (cdr tree) maxdepth)))))
+
+;; iterative helper function for depth-first iterative-deepening search implementation
+;; tree: tree as a list
+;; maxdepth: max depth of tree to limit
+;; level: current level 
+(defun dfid-iterate (tree maxdepth level)
+  (cond
+    ((or (null tree) (< maxdepth level)) nil)
+    (t (append (dls tree level) (dfid-iterate tree maxdepth (+ level 1))))))
+
+;; implementation for depth-first iterative-deepening search
+;; tree: tre as list
+;; maxdepth: max depth of tree to limit
+(defun dfid (tree maxdepth)
+  (dfid-iterate tree maxdepth 0))
+
+
 ; These functions implement a depth-first solver for the missionary-cannibal
 ; problem. In this problem, three missionaries and three cannibals are trying to
 ; go from the east side of a river to the west side. They have a single boat
@@ -32,7 +72,9 @@
 ; FINAL-STATE takes a single argument (S), the current state, and returns T if
 ; it is the goal state (3 3 NIL) and NIL otherwise.
 (defun final-state (s)
-  ...)
+  (cond
+    ((equal s '(3 3 nil)) t)
+    (t nil)))
 
 ; NEXT-STATE returns the state that results from applying an operator to the
 ; current state. It takes three arguments: the current state (S), a number of
@@ -47,21 +89,37 @@
 ; NOTE that next-state returns a list containing the successor state (which is
 ; itself a list); the return should look something like ((1 1 T)).
 (defun next-state (s m c)
-  ...)
+  (cond 
+    ; more cannibals than missionaries 
+    ((and (< (- (car s) m) (- (cadr s) c)) (not (= (- (car s) m) 0))) NIL)
+    ((and (< (+ (- 3 (car s)) m) (+ (- 3 (cadr s)) c)) (not (= (+ (- 3 (car s)) m) 0))) NIL)
+
+    ; too many cannibals or missionaries are moved
+    ((or (< (car s) m) (< (cadr s) c)) NIL)
+
+    ; no problems with the state
+    (t (list (list (+ (- 3 (car s)) m) (+ (- 3 (cadr s)) c) (not (caddr s)))))))
 
 ; SUCC-FN returns all of the possible legal successor states to the current
 ; state. It takes a single argument (S), which encodes the current state, and
 ; returns a list of states that can be reached by applying legal operators to
 ; the current state.
-(defun succ-fn (s)
-  ...)
+(defun succ-fn (s) 
+  (append (next-state s 1 0)
+          (next-state s 0 1)
+          (next-state s 1 1)
+          (next-state s 2 0)
+          (next-state s 0 2)))
 
 ; ON-PATH checks whether the current state is on the stack of states visited by
 ; this depth-first search. It takes two arguments: the current state (S) and the
 ; stack of states visited by MC-DFS (STATES). It returns T if S is a member of
 ; STATES and NIL otherwise.
-(defun on-path (s states)
-  ...)
+(defun on-path (s states) 
+  (cond
+    ((null states) nil)
+    ((equal s (first states)) t)
+    (t (on-path s (rest states)))))
 
 ; MULT-DFS is a helper function for MC-DFS. It takes two arguments: the path
 ; from from the initial state to the current state (PATH), and the legal
@@ -72,7 +130,10 @@
 ; of those searches reaches the final state, MULT-DFS returns the complete path
 ; from the initial state to the goal state. Otherwise, it returns NIL.
 (defun mult-dfs (states path)
-  ...)
+  (let ((explore-state (car states)))
+    (cond ((null explore-state) nil)
+          ((final-state explore-state) (append path (list explore-state)))
+          (t (or (mc-dfs explore-state path) (mult-dfs (cdr states) path))))))
 
 ; MC-DFS does a depth first search from a given state to the goal state. It
 ; takes two arguments: a state (S) and the path from the initial state to S
@@ -82,8 +143,10 @@
 ; responsible for checking if S is already the goal state, as well as for
 ; ensuring that the depth-first search does not revisit a node already on the
 ; search path.
-(defun mc-dfs (s path)
-  ...)
+(defun mc-dfs (s path) 
+  (cond ((or (null s) (on-path s path)) nil)
+        ((final-state s) (append path (list s)))
+        (t (mult-dfs (succ-fn s) (append path (list s))))))
 
 
 ; Function execution examples
