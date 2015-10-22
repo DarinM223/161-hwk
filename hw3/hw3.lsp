@@ -171,7 +171,7 @@
 ; in a single row of a state
 (defun check-row (l)
   (cond ((null l) t)
-        ((= (first l) 2) nil)
+        ((isBox (first l)) nil)
         (t (check-row (rest l)))))
 
 
@@ -188,6 +188,17 @@
         ((equal (check-row (first s)) t) (goal-test (rest s)))
         (t nil))
   );end defun
+
+; Returns the integer content of state s at square (r, c)
+(defun get-square (s r c)
+  nil)
+
+; Returns a new state S' obtained by setting the square (r, c) to value v
+(defun set-square (s r c v)
+  nil)
+
+(defun try-move (s d)
+  nil)
 
 ; EXERCISE: Modify this function to return the list of
 ; sucessor states of s.
@@ -222,7 +233,7 @@
 ; admissible heuristic.
 ;
 (defun h0 (s)
-  )
+  0)
 
 ; EXERCISE: Modify this function to compute the
 ; number of misplaced boxes in s.
@@ -239,7 +250,7 @@
 ; The Lisp 'time' function can be used to measure the
 ; running time of a function call.
 ;
-(defun hUID (s)
+(defun h704140102 (s)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
