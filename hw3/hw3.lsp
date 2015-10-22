@@ -190,8 +190,19 @@
   );end defun
 
 ; Returns the integer content of state s at square (r, c)
+; (both r and c are zero-indexed)
 (defun get-square (s r c)
-  nil)
+  (cond ((or 
+           (null (nthcdr r s))
+           (null (first (nthcdr r s))))
+         wall)
+        (t 
+          (let ((row (first (nthcdr r s))))
+            (cond ((or 
+                     (null (nthcdr c row))
+                     (null (first (nthcdr c row))))
+                   wall)
+                  (t (first (nthcdr c row))))))))
 
 ; Returns a new state S' obtained by setting the square (r, c) to value v
 (defun set-square (s r c v)
