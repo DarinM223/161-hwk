@@ -192,21 +192,22 @@
 ; Returns the integer content of state s at square (r, c)
 ; (both r and c are zero-indexed)
 (defun get-square (s r c)
-  (cond ((or 
-           (null (nthcdr r s))
-           (null (first (nthcdr r s))))
-         wall)
+  (cond ((null (first (nthcdr r s))) wall)
         (t 
           (let ((row (first (nthcdr r s))))
-            (cond ((or 
-                     (null (nthcdr c row))
-                     (null (first (nthcdr c row))))
-                   wall)
+            (cond ((null (first (nthcdr c row))) wall)
                   (t (first (nthcdr c row))))))))
+
+(defun set-column (l c v)
+  (cond ((null l) nil)
+        ((equal c 0) (append (list v) (rest l)))
+        (t (append (list (first l)) (set-column (rest l) (- c 1) v)))))
 
 ; Returns a new state S' obtained by setting the square (r, c) to value v
 (defun set-square (s r c v)
-  nil)
+  (cond ((null s) nil)
+        ((equal r 0) (append (list (set-column (first s) c v)) (rest s)))
+        (t (append (list (first s)) (set-square (rest s) (- r 1) c v)))))
 
 (defun try-move (s d)
   nil)

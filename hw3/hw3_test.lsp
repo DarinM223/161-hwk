@@ -18,6 +18,10 @@
               ((get-square '((1 2 3) (4 5 6) (7 8 9)) 100 100) 1 "get-square: out of bounds returns wall")
               ((get-square '((1 2 3) (4 5 6) (7 8 9)) 2 2) 9 "get-square: get last element works")
               ((get-square '((7 8 9) (4 5 6) (1 2 3)) 0 0) 7 "get-square: get first element works")
+              ; set-square testcases
+              ((set-square '((1 2 3) (4 5 6) (7 8 9)) 100 100 3) ((1 2 3) (4 5 6) (7 8 9)) "set-square: out of bounds does nothing")
+              ((set-square '((1 2 3) (4 5 6) (7 8 9)) 0 0 3) ((3 2 3) (4 5 6) (7 8 9)) "set-square: sets first element")
+              ((set-square '((1 2 3) (4 5 6) (7 8 9)) 2 2 3) ((1 2 3) (4 5 6) (7 8 3)) "set-square: sets last element")
               ; h0 testcases
               ((h0 '((1 2 3) (4 5 6))) 0 "h0: Yes it returns 0")
               ((h0 nil) 0 "h0: IT RETURNS ZERO")
