@@ -209,8 +209,56 @@
         ((equal r 0) (append (list (set-column (first s) c v)) (rest s)))
         (t (append (list (first s)) (set-square (rest s) (- r 1) c v)))))
 
-(defun try-move (s d)
-  nil)
+(defun new-move-position (pos x direction)
+  (let ((col (first pos))
+        (row (second pos)))
+    (cond ((equal x t) (list (+ col direction) row))
+          (t (list col (+ row direction))))))
+
+(defun remove-box-or-keeper (s row col)
+  (cond ((isKeeper (get-square s row col)) (set-square s row col blank)) 
+        ((isKeeperStar (get-square s row col)) (set-square s row col star))
+        ((isBox (get-square s row col)) (set-square s row col blank))
+        ((isBoxStar (get-square s row col)) (set-square s row col star))
+        (t s)))
+
+(defun add-box-or-keeper (s row col value)
+  (cond ((or (isKeeper value) (isKeeperStar value))
+         (cond ((isBlank (get-square s row col)) (set-square s row col keeper))
+               ((isStar (get-square s row col)) (set-square s row col keeperstar))))
+        ((or (isBox value) (isBoxStar value))
+         (cond ((isBlank (get-square s row col)) (set-square s row col box))
+               ((isStar (get-square s row col)) (set-square s row col boxstar))))))
+
+; x is true if you are moving on the x axis
+(defun try-move (s x direction)
+  (let* ((keeperPosition (getKeeperPosition 0))
+         (movePosition (new-move-position keeperPosition x direction))
+         (keeperPositionCol (first keeperPosition))
+         (keeperPositionRow (second keeperPosition))
+         (movePositionCol (first movePosition))
+         (movePositionRow (second movePosition)))
+    (cond ((isWall (get-square s movePositionRow movePositionCol)) nil)
+          ((or 
+             (isBox (get-square s movePositionRow movePositionCol))
+             (isBoxStar (get-square s movePositionRow movePositionCol)))
+           (let ((boxMovePosition (new-move-position movePosition x direction))
+                 (boxMovePositionCol (first boxMovePosition))
+                 (boxMovePositionRow (second boxMovePosition)))
+             (cond ((not (isBlank (get-square s boxMovePositionRow boxMovePositionCol))) nil)
+                   (t 
+                     (add-box-or-keeper 
+                       (add-box-or-keeper 
+                         (remove-box-or-keeper 
+                           (remove-box-or-keeper s keeperPositionRow keeperPositionCol)
+                           movePositionRow movePositionCol) 
+                         movePositionRow movePositionCol keeper)
+                       boxMovePositionRow boxMovePositionCol box)))))
+          (t 
+            (add-box-or-keeper 
+              (remove-box-or-keeper s keeperPositionRow keeperPositionCol)
+              movePositionRow movePositionCol keeper)))))
+
 
 ; EXERCISE: Modify this function to return the list of
 ; sucessor states of s.
@@ -270,7 +318,7 @@
 ; running time of a function call.
 ;
 (defun h704140102 (s)
-  )
+  nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
