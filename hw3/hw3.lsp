@@ -167,6 +167,14 @@
 	);end cond
   );end
 
+; Checks if there is a box that is not in a goal
+; in a single row of a state
+(defun check-row (l)
+  (cond ((null l) t)
+        ((= (first l) 2) nil)
+        (t (check-row (rest l)))))
+
+
 ; EXERCISE: Modify this function to return true (t)
 ; if and only if s is a goal state of a Sokoban game.
 ; (no box is on a non-goal square)
@@ -176,7 +184,9 @@
 ; terminate until the whole search space is exhausted.
 ;
 (defun goal-test (s)
-  nil
+  (cond ((null s) t)
+        ((equal (check-row (first s)) t) (goal-test (rest s)))
+        (t nil))
   );end defun
 
 ; EXERCISE: Modify this function to return the list of
