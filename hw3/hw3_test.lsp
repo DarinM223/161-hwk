@@ -7,7 +7,7 @@
 
 (setq tests '(
               ; goal-test testcases
-              ((goal-test nil) t "goal-test: If no board you win by default :P")
+              ((goal-test nil) nil "goal-test: If no board you lose by default :P")
               ((goal-test '((0 0 0)
                             (1 1 1)
                             (5 5 6))) t "goal-test: testing goal is true")

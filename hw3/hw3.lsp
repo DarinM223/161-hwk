@@ -174,6 +174,10 @@
         ((isBox (first l)) nil)
         (t (check-row (rest l)))))
 
+(defun has-boxes (s)
+  (cond ((null s) t)
+        ((equal (check-row (first s)) t) (has-boxes (rest s)))
+        (t nil)))
 
 ; EXERCISE: Modify this function to return true (t)
 ; if and only if s is a goal state of a Sokoban game.
@@ -184,10 +188,8 @@
 ; terminate until the whole search space is exhausted.
 ;
 (defun goal-test (s)
-  (cond ((null s) t)
-        ((equal (check-row (first s)) t) (goal-test (rest s)))
-        (t nil))
-  );end defun
+  (cond ((null s) nil)
+        (t (has-boxes s))))
 
 ; Returns the integer content of state s at square (r, c)
 ; (both r and c are zero-indexed)
