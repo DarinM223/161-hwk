@@ -232,7 +232,7 @@
 
 ; x is true if you are moving on the x axis
 (defun try-move (s x direction)
-  (let* ((keeperPosition (getKeeperPosition 0))
+  (let* ((keeperPosition (getKeeperPosition s 0))
          (movePosition (new-move-position keeperPosition x direction))
          (keeperPositionCol (first keeperPosition))
          (keeperPositionRow (second keeperPosition))
@@ -242,7 +242,7 @@
           ((or 
              (isBox (get-square s movePositionRow movePositionCol))
              (isBoxStar (get-square s movePositionRow movePositionCol)))
-           (let ((boxMovePosition (new-move-position movePosition x direction))
+           (let* ((boxMovePosition (new-move-position movePosition x direction))
                  (boxMovePositionCol (first boxMovePosition))
                  (boxMovePositionRow (second boxMovePosition)))
              (cond ((not (isBlank (get-square s boxMovePositionRow boxMovePositionCol))) nil)
@@ -283,7 +283,11 @@
 	 (x (car pos))
 	 (y (cadr pos))
 	 ;x and y are now the coordinate of the keeper in s.
-	 (result nil)
+	 (result (append 
+               (list (try-move s nil (- 1)))
+               (list (try-move s t 1))
+               (list (try-move s nil 1))
+               (list (try-move s t (- 1)))))
 	 )
     (cleanUpList result);end
    );end let
