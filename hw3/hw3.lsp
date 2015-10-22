@@ -235,10 +235,17 @@
 (defun h0 (s)
   0)
 
+(defun num-boxes-in-row (l)
+  (cond ((null l) 0)
+        ((isBox (first l)) (+ 1 (num-boxes-in-row (rest l))))
+        (t (num-boxes-in-row (rest l)))))
+
 ; EXERCISE: Modify this function to compute the
 ; number of misplaced boxes in s.
 ;
 (defun h1 (s)
+  (cond ((null s) 0)
+        (t (+ (num-boxes-in-row (first s)) (h1 (rest s)))))
   )
 
 ; EXERCISE: Change the name of this function to h<UID> where
