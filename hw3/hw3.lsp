@@ -167,17 +167,15 @@
 	);end cond
   );end
 
-; Checks if there is a box that is not in a goal
-; in a single row of a state
-(defun check-row (l)
-  (cond ((null l) t)
-        ((isBox (first l)) nil)
-        (t (check-row (rest l)))))
 
-(defun has-boxes (s)
-  (cond ((null s) t)
-        ((equal (check-row (first s)) t) (has-boxes (rest s)))
-        (t nil)))
+(defun countBoxes (s)
+  (let ((boxes 0))
+    (cond
+      ((NULL s) 0)
+      ; Only increments if the box is not on a goal
+      ; because boxes on a goal are represented by another symbol
+      (t (+ (count-if #'isBox (first s)) (countBoxes (rest s)))))))
+
 
 ; EXERCISE: Modify this function to return true (t)
 ; if and only if s is a goal state of a Sokoban game.
@@ -187,12 +185,21 @@
 ; this function as the goal testing function, A* will never
 ; terminate until the whole search space is exhausted.
 ;
+; runs the function countBoxes
 (defun goal-test (s)
-  (cond ((null s) nil)
-        (t (has-boxes s))))
+  (cond
+    ((NULL s) nil)
+    (t (if (= (countBoxes s) 0) t)))
+  );end defun
 
 ; Returns the integer content of state s at square (r, c)
 ; (both r and c are zero-indexed)
+; 
+; uses nthcdr to strip off the top lists twice for both dimensions
+; :param: s the current state
+; :param: r the row to get
+; :param: c the column to get
+; :returns: the integer content of state s
 (defun get-square (s r c)
   (cond ((null (first (nthcdr r s))) wall)
         (t 
@@ -200,66 +207,104 @@
             (cond ((null (first (nthcdr c row))) wall)
                   (t (first (nthcdr c row))))))))
 
+; Returns the new row as a list by setting a column to a value
+; recursively decrements the column number until its 0 and then appends the rest
+; :param: l the current row as a list
+; :param: c the column to get from the row
+; :param: v the value to set the column
+; :returns: the new row as a list
 (defun set-column (l c v)
   (cond ((null l) nil)
         ((equal c 0) (append (list v) (rest l)))
         (t (append (list (first l)) (set-column (rest l) (- c 1) v)))))
 
 ; Returns a new state S' obtained by setting the square (r, c) to value v
+; recursively decrements the row number until its 0 and then calls
+; set-column and appends the rest
+; :param: s the current state
+; :param: r the row to set
+; :param: c the column to set
+; :param: v the value to set
+; :returns: the new state with the square set to the new value
 (defun set-square (s r c v)
   (cond ((null s) nil)
         ((equal r 0) (append (list (set-column (first s) c v)) (rest s)))
         (t (append (list (first s)) (set-square (rest s) (- r 1) c v)))))
 
-(defun new-move-position (pos x direction)
-  (let ((col (first pos))
-        (row (second pos)))
-    (cond ((equal x t) (list (+ col direction) row))
-          (t (list col (+ row direction))))))
+; Attempts to move keeper to move direction d
+; :param: s the current state
+; :param: d the direction (as 'UP, 'DOWN, ... )
+; :returns: the new state with keeper moved or nil if it can't be moved
+(defun try-move (s d)
+  (let*
+    ((keeper-position (getKeeperPosition s 0))
+     (old-row (second keeper-position))
+     (old-column (first keeper-position))
+     (new-row (first (next-square s old-row old-column d)))
+     (new-column (second (next-square s old-row old-column d)))
+     (new-value (get-square s new-row new-column)))
+    (cond
+      ((isWall new-value) nil)
+      ((isBlank new-value)
+        (let* ((new-state (set-square s new-row new-column keeper)))
+          (remove-keeper-or-box new-state old-row old-column)))
+      ((isStar new-value)
+        (let* ((new-state (set-square s new-row new-column keeperstar)))
+          (remove-keeper-or-box new-state old-row old-column)))
+      ((or (isBox new-value) (isBoxStar new-value))
+        (let* ((new-state (try-move-box s new-row new-column d)))
+          (cond
+            ((NULL new-state) nil)
+            (t (try-move new-state d))))))))
 
-(defun remove-box-or-keeper (s row col)
-  (cond ((isKeeper (get-square s row col)) (set-square s row col blank)) 
-        ((isKeeperStar (get-square s row col)) (set-square s row col star))
-        ((isBox (get-square s row col)) (set-square s row col blank))
-        ((isBoxStar (get-square s row col)) (set-square s row col star))
-        (t s)))
+; Returns coordinates for next square in direction d
+; a simple condition statement for direction to get the next square
+; :param: s the current state
+; :param: r the current row
+; :param: c the current column
+; :param: d the direction (as 'UP, 'DOWN, ...)
+; :returns: the coordinate for the next square as a list (row, column)
+(defun next-square (s r c d)
+  (cond 
+    ((NULL s) nil)
+    ((equal 'UP d) (list (- r 1) c))
+    ((equal 'DOWN d) (list (+ r 1) c))
+    ((equal 'LEFT d) (list r (- c 1)))
+    ((equal 'RIGHT d) (list r (+ c 1)))
+    (t nil)))
 
-(defun add-box-or-keeper (s row col value)
-  (cond ((or (isKeeper value) (isKeeperStar value))
-         (cond ((isBlank (get-square s row col)) (set-square s row col keeper))
-               ((isStar (get-square s row col)) (set-square s row col keeperstar))))
-        ((or (isBox value) (isBoxStar value))
-         (cond ((isBlank (get-square s row col)) (set-square s row col box))
-               ((isStar (get-square s row col)) (set-square s row col boxstar))))))
+; Removes the keeper or box 
+; :param: s the current state
+; :param: r the row to remove
+; :param: c the column to remove
+; :returns: the new state with keeper or box removed
+(defun remove-keeper-or-box (s r c)
+  (cond
+    ((NULL s) nil)
+    (t (let* ((value (get-square s r c)))
+      (cond
+        ((or (isKeeper value) (isBox value)) (set-square s r c blank))
+        ((or (isKeeperStar value) (isBoxStar value)) (set-square s r c star)))))))
 
-; x is true if you are moving on the x axis
-(defun try-move (s x direction)
-  (let* ((keeperPosition (getKeeperPosition s 0))
-         (movePosition (new-move-position keeperPosition x direction))
-         (keeperPositionCol (first keeperPosition))
-         (keeperPositionRow (second keeperPosition))
-         (movePositionCol (first movePosition))
-         (movePositionRow (second movePosition)))
-    (cond ((isWall (get-square s movePositionRow movePositionCol)) nil)
-          ((or 
-             (isBox (get-square s movePositionRow movePositionCol))
-             (isBoxStar (get-square s movePositionRow movePositionCol)))
-           (let* ((boxMovePosition (new-move-position movePosition x direction))
-                 (boxMovePositionCol (first boxMovePosition))
-                 (boxMovePositionRow (second boxMovePosition)))
-             (cond ((not (isBlank (get-square s boxMovePositionRow boxMovePositionCol))) nil)
-                   (t 
-                     (add-box-or-keeper 
-                       (add-box-or-keeper 
-                         (remove-box-or-keeper 
-                           (remove-box-or-keeper s keeperPositionRow keeperPositionCol)
-                           movePositionRow movePositionCol) 
-                         movePositionRow movePositionCol keeper)
-                       boxMovePositionRow boxMovePositionCol box)))))
-          (t 
-            (add-box-or-keeper 
-              (remove-box-or-keeper s keeperPositionRow keeperPositionCol)
-              movePositionRow movePositionCol keeper)))))
+; Tries to move the a box at row r and column c in direction d
+; :param: s the current state
+; :param: r the row
+; :param: c the column
+; :param: d the direction ('UP, 'DOWN, 'LEFT, 'RIGHT)
+; :return: nil if can't move, otherwise updated position
+(defun try-move-box (s r c d)
+  (let*
+    ((new-row (first (next-square s r c d)))
+     (new-column (second (next-square s r c d)))
+     (value (get-square s new-row new-column)))
+    (cond
+      ((or (isWall value) (isBox value) (isBoxStar value)) nil)
+      ((isBlank value)
+        (let* ((new-state (set-square s new-row new-column box)))
+          (remove-keeper-or-box new-state r c)))
+      ((isStar value)
+        (let* ((new-state (set-square s new-row new-column boxstar)))
+          (remove-keeper-or-box new-state r c))))))
 
 
 ; EXERCISE: Modify this function to return the list of
@@ -285,11 +330,11 @@
 	 (x (car pos))
 	 (y (cadr pos))
 	 ;x and y are now the coordinate of the keeper in s.
-	 (result (append 
-               (list (try-move s nil (- 1)))
-               (list (try-move s t 1))
-               (list (try-move s nil 1))
-               (list (try-move s t (- 1)))))
+	 (result (list
+               (try-move s 'UP)
+               (try-move s 'DOWN)
+               (try-move s 'LEFT)
+               (try-move s 'RIGHT)))
 	 )
     (cleanUpList result);end
    );end let
@@ -324,7 +369,7 @@
 ; running time of a function call.
 ;
 (defun h704140102 (s)
-  nil)
+  (h1 s))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
