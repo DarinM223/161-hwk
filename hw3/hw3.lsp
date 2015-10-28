@@ -1,3 +1,5 @@
+; Name: Darin Minamoto
+; UID: 704140102
 ;
 ; CS161 HW3: Sokoban
 ;
