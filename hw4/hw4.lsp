@@ -14,6 +14,8 @@
     (t 
       (or (dfs (first states) n) (dfs-helper (rest states) n)))))
 
+(defun place-queen (s queen-col) (update s queen-col))
+
 (defun dfs (s n)
   (let* ((queens (first s))
          (full-state (second s))
@@ -22,20 +24,6 @@
       ((and (= n num-queens-placed)) queens) 
       (t
         (dfs-helper (succ s n) n))))) 
-
-(defun succ-helper (queens move-options s n succ-states)
-  (cond 
-    ((null move-options) succ-states)
-    (t
-      (let* ((add-queen (first move-options)) 
-             (res-queens (append queens (list add-queen))) 
-             (res-state (place-queen s add-queen)) 
-             (new-state (cons res-queens (list res-state))))
-        (cond 
-          ((not (state-valid res-state)) 
-           (succ-helper queens (rest move-options) s n succ-states))
-          (t 
-            (succ-helper queens (rest move-options) s n (cons new-state succ-states))))))))
 
 (defun state-valid (s) 
   (let* ((col-options (first s))) 
@@ -53,29 +41,19 @@
          (col-options (first state)))
     (succ-helper queens col-options state n '())))
 
-(defun set-nth (l n v)
-  (let ((len (length l)))
-    (cond 
-      ((> n len) nil)
-      (t (append (butlast l (- len n -1)) (list v) (nthcdr n l))))))
-
-(defun remove-val (l v)
-  (defun remove-val-helper (l v build-l)
-    (cond 
-      ((null l) build-l)
-      ((= (first l) v) (append build-l (rest l)))
-      (t (remove-val-helper (rest l) v (append build-l (list (first l)))))))
-  (remove-val-helper l v '()))
-
-(defun remove-left-col-right (l left col right)
-  (defun remove-val-helper (l left col right build-l)
-    (let ((curr-v (first l)))
-      (cond 
-        ((null l) build-l)
-        ((or (= curr-v left) (= curr-v col) (= curr-v right))
-         (remove-val-helper (rest l) left col right build-l))
-        (t (remove-val-helper (rest l) left col right (append build-l (list curr-v)))))))
-  (remove-val-helper l left col right '()))
+(defun succ-helper (queens move-options s n succ-states)
+  (cond 
+    ((null move-options) succ-states)
+    (t
+      (let* ((add-queen (first move-options)) 
+             (res-queens (append queens (list add-queen))) 
+             (res-state (place-queen s add-queen)) 
+             (new-state (cons res-queens (list res-state))))
+        (cond 
+          ((not (state-valid res-state)) 
+           (succ-helper queens (rest move-options) s n succ-states))
+          (t 
+            (succ-helper queens (rest move-options) s n (cons new-state succ-states))))))))
 
 (defun generate-state (n) (generate-lists n n))
 
@@ -89,7 +67,31 @@
     ((= n 1) '(1))
     (t (append (generate-list (- n 1)) (list n)))))
 
-(defun place-queen (s queen-col) (update s queen-col))
+(defun set-nth (l n v)
+  (let ((len (length l)))
+    (cond 
+      ((> n len) nil)
+      (t (append (butlast l (- len n -1)) (list v) (nthcdr n l))))))
+
+(defun remove-val (l v)
+  (remove-val-helper l v '()))
+
+(defun remove-val-helper (l v build-l)
+  (cond 
+    ((null l) build-l)
+    ((= (first l) v) (append build-l (rest l)))
+    (t (remove-val-helper (rest l) v (append build-l (list (first l)))))))
+
+(defun remove-left-col-right (l left col right)
+  (remove-left-col-right-helper l left col right '()))
+
+(defun remove-left-col-right-helper (l left col right build-l)
+  (let ((curr-v (first l)))
+    (cond 
+      ((null l) build-l)
+      ((or (= curr-v left) (= curr-v col) (= curr-v right))
+       (remove-left-col-right-helper (rest l) left col right build-l))
+      (t (remove-left-col-right-helper (rest l) left col right (append build-l (list curr-v)))))))
 
 (defun update (s col) (rest (update-helper '() s col col col)))
 

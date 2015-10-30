@@ -1,9 +1,5 @@
 (load "hw4.lsp")
 
-; writes to a file "test.txt"
-
-(defvar cmds)
-; cmds is a list of (command result) tuples. The first element in the tuple will be evaluated as a command, and the second output will be printed as the correct output
 (setq cmds '(((time (queens 1)))
              ((time (queens 2)))
              ((time (queens 3)))
@@ -25,10 +21,9 @@
         (ans (cadr cmdobj)))
     (format stream "> ~a~%" cmd)
     (format stream "~a~%~%" (eval cmd))))
-;(format stream "~a <--correct output~%~%" ans)))
 
 (defun print-cmd-list (cmds stream)
-  (cond ((null (cdr cmds)) (print-cmd-output (car cmds) stream));(print (eval (car cmds)) stream))
+  (cond ((null (cdr cmds)) (print-cmd-output (car cmds) stream))
         (t (let () 
              (print-cmd-output (car cmds) stream) 
              (print-cmd-list (cdr cmds) stream)))))
