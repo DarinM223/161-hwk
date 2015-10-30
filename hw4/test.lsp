@@ -15,7 +15,10 @@
              ((time (queens 9)))
              ((time (queens 10)))
              ((time (queens 11)))
-             ((time (queens 12)))))
+             ((time (queens 12)))
+             ((time (queens 13)))
+             ((time (queens 14)))
+             ((time (queens 15)))))
 
 (defun print-cmd-output (cmdobj stream)
   (let ((cmd (car cmdobj))
